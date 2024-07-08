@@ -1,0 +1,84 @@
+﻿@model IEnumerable<MVC.Models.mvcTaskModel>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<br />
+<p>
+    <a href="@Url.Action("AddOrEdit","task")" class="btn btn-default"><i class="fa fa-plus"></i> Create New</a>
+</p>
+<table class="table table-striped">
+    <thead class="table-heading">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>Actions</th>
+            <th>
+                @Html.DisplayNameFor(model => model.Completed)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    <a href="@Url.Action("AddOrEdit", "Task", new { id = item.ID})" class="btn btn-default"><i class="fa fa-pencil"></i>  Edit</a>
+                    <a onclick="Delete(@item.ID)" class="btn btn-default"><i class="fa fa-trash"></i>  Delete</a>
+                </td>
+                <td>
+                    <input type="checkbox" class="completed-checkbox" data-id="@item.ID" @(item.Completed ? "checked" : "") />
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.completed-checkbox').change(function() {
+            var taskId = $(this).data('ID');
+            var isCompleted = $(this).is(':Completed') ? 1 : 0;
+
+            $.ajax({
+                url: '@Url.Action("UpdateCompletedStatus", "Task")',
+                type: 'POST',
+                data: {
+                    id: taskId,
+                    completed: isCompleted
+                },
+                success: function(response) {
+                    console.log('Task status updated successfully');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating task status:', error);
+                }
+            });
+        });
+    });
+</script>
+
+@section scripts{
+    <script>
+        $(function () {
+            var successMessage = '@TempData["SuccessMessage"]'
+            if (successMessage != '')
+                alertify.success(successMessage);
+        });
+
+        function Delete(id) {
+            alertify.confirm('Web Api CRUD Operations','Are You Sure to Delete this Record ?',function(){
+                window.location.href  = '@Url.Action("Delete","Task")/'+id;
+            },null );
+        }
+    </script>
+}
